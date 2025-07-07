@@ -1,18 +1,48 @@
 #include "util.hpp"
 #include "level.hpp"
 #include "formatter.hpp"
+#include "sink.hpp"
 #include <iostream>
 #include <thread>
 #include <string>
+
 using namespace yhlog::util;
 
 int main() {
 
     std::string logger_name = "myh";
     yhlog::LogMsg msg(logger_name, "main.cc", 27, "Formatted log message test!", yhlog::LogLevel::Value::INFO);
-    yhlog::Formatter fmt("[%d{%Y-%m-%d %H:%M:%S}][%t][%p][%c] %m%n"); 
-    std::string str = fmt.format(msg);                                
-    std::cout << str << std::endl;
+
+    {
+        yhlog::Formatter fmt;
+        std::string str = fmt.format(msg); 
+        yhlog::LogSink::ptr stdout_sink = yhlog::SinkFactory::create<yhlog::StdoutSink>();
+        stdout_sink->log(str.c_str(), str.size()); // Write to stdout
+    }
+
+    {
+        yhlog::Formatter fmt("[%d{%Y-%m-%d %H:%M:%S}][%t][%p][%c] %m%n");
+        std::string str = fmt.format(msg);                                   
+        yhlog::LogSink::ptr file_sink = yhlog::SinkFactory::create<yhlog::FileSink>("test_log.log");
+        file_sink->log(str.c_str(), str.size()); 
+    }
+
+    {
+        yhlog::Formatter fmt("[%d{%H:%M:%S}][%p] %m%n");                                                  
+        std::string str = fmt.format(msg);                                                                   
+        yhlog::LogSink::ptr roll_sink = yhlog::SinkFactory::create<yhlog::RollSink>("./logfile/roll_log_", 50);
+        for (int i = 0; i < 10086; ++i)
+        {
+            std::string test_str = "RollSink File #" + std::to_string(i) + ": " + str;
+            roll_sink->log(test_str.c_str(), test_str.size()); 
+        }
+    }
+
+    // std::string logger_name = "myh";
+    // yhlog::LogMsg msg(logger_name, "main.cc", 27, "Formatted log message test!", yhlog::LogLevel::Value::INFO);
+    // yhlog::Formatter fmt("[%d{%Y-%m-%d %H:%M:%S}][%t][%p][%c] %m%n"); 
+    // std::string str = fmt.format(msg);                                
+    // std::cout << str << std::endl;
 
     // std::cout<< yhlog::LogLevel::toString(yhlog::LogLevel::Value::DEBUG) << std::endl;
     // std::cout<< yhlog::LogLevel::toString(yhlog::LogLevel::Value::INFO) << std::endl;
