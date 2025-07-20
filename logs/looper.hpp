@@ -22,6 +22,25 @@ namespace yhlog
               _thread(std::bind(&AsyncWorker::worker, this))
         {
         }
+        ~AsyncWorker() { stop(); }
+        void stop()
+        {
+            _running = false;
+            _pop_cv.notify_all();
+            _thread.join();
+        }
+        void push(const std::string &msg)
+        {
+            if (_running == false)
+                return;
+            {
+                std::unique_lock<std::mutex> lock(_mtx);
+                _push_cv.wait(lock, [&]()
+                              { return _tasks_push.WritableSize() >= msg.size(); });
+                _tasks_push.push(msg.c_str(), msg.size());
+            }
+            _pop_cv.notify_all();
+        }
 
     private:
         void worker()
