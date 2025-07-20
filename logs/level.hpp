@@ -1,11 +1,13 @@
 #ifndef __M_LEVEL_H__
 #define __M_LEVEL_H__
 
+// 日志等级类
 namespace yhlog
 {
     class LogLevel
     {
-        public:
+    public:
+        // 定义日志级别枚举
         enum class Value
         {
             DEBUG,
@@ -16,11 +18,13 @@ namespace yhlog
             OFF
         };
 
-        static const char* toString(LogLevel::Value v)
+        // 将日志级别转换为字符串
+        static const char *toString(LogLevel::Value v)
         {
             switch (v)
             {
 #define TOSTRING(name) #name
+            // 根据日志级别返回对应的字符串
             case LogLevel::Value::DEBUG:
                 return TOSTRING(DEBUG);
             case LogLevel::Value::INFO:
