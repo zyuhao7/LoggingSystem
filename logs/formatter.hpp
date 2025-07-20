@@ -10,12 +10,13 @@
 
 namespace yhlog
 {
+    // 定义一个格式化项类
     class FormatItem
     {
     public:
         using ptr = std::shared_ptr<FormatItem>;
         virtual ~FormatItem() {}
-        virtual void format(std::ostream& os, const LogMsg& msg) = 0;
+        virtual void format(std::ostream &os, const LogMsg &msg) = 0;
     };
 
     class MsgFormatItem : public FormatItem
@@ -82,7 +83,7 @@ namespace yhlog
         }
     };
 
-     class CFileFormatItem : public FormatItem
+    class CFileFormatItem : public FormatItem
     {
     public:
         CFileFormatItem(const std::string &str = "") {}
@@ -141,7 +142,7 @@ namespace yhlog
     class Formatter
     {
     public:
-      using ptr = std::shared_ptr<Formatter>;
+        using ptr = std::shared_ptr<Formatter>;
         /*
             %d 日期
             %T 缩进
@@ -152,31 +153,31 @@ namespace yhlog
             %m 日志消息
             %n 换行
         */
-       Formatter(const std::string& pattern =  "[%d{%H:%M:%S}][%t][%p][%c][%f:%l] %m%n")
-        :_pattern(pattern)
-       {
+        Formatter(const std::string &pattern = "[%d{%H:%M:%S}][%t][%p][%c][%f:%l] %m%n")
+            : _pattern(pattern)
+        {
             assert(parsePattern());
-       }
+        }
 
-       const std::string pattern() {return _pattern;}
-       std::string format(const LogMsg& msg)
-       {
+        const std::string pattern() { return _pattern; }
+        std::string format(const LogMsg &msg)
+        {
             std::stringstream ss;
-            for(auto& it : _items)
+            for (auto &it : _items)
             {
                 it->format(ss, msg);
             }
             return ss.str();
-       }
+        }
 
-       std::ostream& format(std::ostream& os, const LogMsg& msg)
-       {
-            for(auto& it : _items)
+        std::ostream &format(std::ostream &os, const LogMsg &msg)
+        {
+            for (auto &it : _items)
             {
                 it->format(os, msg);
             }
             return os;
-       }
+        }
 
         FormatItem::ptr createItem(const std::string &fc, const std::string &subfmt)
         {
@@ -202,7 +203,7 @@ namespace yhlog
             return FormatItem::ptr();
         }
 
-         // pattern 解析
+        // pattern 解析
         // std::string _pattern
         // std::cout << _pattern << std::endl;
 
@@ -210,10 +211,11 @@ namespace yhlog
         //  格式化字符 : %d %T %p...
         //  对应的输出⼦格式 ： {%H:%M:%S}
         //  对应数据的类型 ： 0-表⽰原始字符串，也就是⾮格式化字符，1-表⽰格式化数据类型
-        // 默认格式 "%d{%H:%M:%S}%T%t%T[%p]%T[%c]%T%f:%l%T%m%n"
-        // 
+        // 默认格式 "aaa%d{%H:%M:%S}%T%t%T[%p]%T[%c]%T%f:%l%T%m%n"
+        //
         bool parsePattern()
         {
+            // 定义一个vector，用于存放格式化字符串
             std::vector<std::tuple<std::string, std::string, int>> array;
             std::string format_key; // 存放 % 后的格式字符
             std::string format_val; // 存放格式化字符后边 {} 中的子格式字符串
@@ -221,23 +223,23 @@ namespace yhlog
             bool sub_format_error = false;
             int pos = 0;
             int n = _pattern.size();
-            while(pos < n)
+            while (pos < n)
             {
                 // 如果不是 % 添加到原始字符串.
-                if(_pattern[pos] != '%')
+                if (_pattern[pos] != '%')
                 {
                     string_row += _pattern[pos++];
                     continue;
                 }
                 // Pos位置是%,判断是否是 %%,如果是的话只需要添加一个%即可.
-                if(pos + 1 < n &&_pattern[pos + 1] == '%')
+                if (pos + 1 < n && _pattern[pos + 1] == '%')
                 {
                     string_row += _pattern[pos];
                     pos += 2;
                     continue;
                 }
                 // 如果原始字符串不为空, 添加到数组
-                if(!string_row.empty())
+                if (!string_row.empty())
                 {
                     array.push_back(std::make_tuple(string_row, "", 0));
                     string_row.clear();
@@ -245,7 +247,7 @@ namespace yhlog
                 // 当前位置是%，并且下一个字符是 key.
                 pos += 1;
                 // 防止 % 是最后一个字符导致出错
-                if(pos < n && isalpha(_pattern[pos]))
+                if (pos < n && isalpha(_pattern[pos]))
                 {
                     format_key = _pattern[pos];
                 }
@@ -256,13 +258,13 @@ namespace yhlog
                 }
                 // pos 指向格式化字符的下一个位置, 判断是否含有子格式 %d{%H%M%S}
                 pos += 1;
-                if(pos < n && _pattern[pos] == '{')
+                if (pos < n && _pattern[pos] == '{')
                 {
                     sub_format_error = true;
                     pos += 1;
-                    while(pos < n)
+                    while (pos < n)
                     {
-                        if(_pattern[pos] == '}')
+                        if (_pattern[pos] == '}')
                         {
                             sub_format_error = false;
                             pos += 1;
@@ -277,7 +279,7 @@ namespace yhlog
                 format_val.clear();
             }
 
-            if(sub_format_error)
+            if (sub_format_error)
             {
                 std::cout << "{} 对应出错!" << std::endl;
                 return false;
@@ -287,8 +289,9 @@ namespace yhlog
             if (format_key.empty() == false)
                 array.push_back(std::make_tuple(format_key, format_val, 1));
 
-             for (auto &it : array)
+            for (auto &it : array)
             {
+                // 其他格式 OtherFormatItem
                 if (std::get<2>(it) == 0)
                 {
                     FormatItem::ptr fi(new OtherFormatItem(std::get<0>(it)));
@@ -296,6 +299,7 @@ namespace yhlog
                 }
                 else
                 {
+                    // d : %M%H%S
                     FormatItem::ptr fi = createItem(std::get<0>(it), std::get<1>(it));
                     if (fi.get() == nullptr)
                     {
@@ -311,10 +315,7 @@ namespace yhlog
     private:
         std::string _pattern;
         std::vector<FormatItem::ptr> _items;
-
     };
 }
-
-
 
 #endif
