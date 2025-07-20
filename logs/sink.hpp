@@ -10,76 +10,75 @@ namespace yhlog
 {
     class LogSink
     {
-     public:
+    public:
         using ptr = std::shared_ptr<LogSink>;
-        LogSink(){}
-        virtual ~LogSink(){}
-        virtual void log(const char* data, size_t len) = 0;
+        LogSink() {}
+        virtual ~LogSink() {}
+        virtual void log(const char *data, size_t len) = 0;
     };
 
     class StdoutSink : public LogSink
     {
-     public:
+    public:
         using ptr = std::shared_ptr<StdoutSink>;
         StdoutSink() = default;
-        void log(const char* msg, size_t len)
+        void log(const char *msg, size_t len)
         {
             std::cout.write(msg, len);
         }
     };
     class FileSink : public LogSink
     {
-     public:
+    public:
         using ptr = std::shared_ptr<FileSink>;
-        FileSink(const std::string& filename)
-        :_filename(filename)
+        FileSink(const std::string &filename)
+            : _filename(filename)
         {
             util::file::create_directory(util::file::path(_filename));
             _ofs.open(_filename, std::ios::binary | std::ios::app);
             assert(_ofs.is_open());
         }
-        const std::string& file(){return _filename;}
-        void log(const char* msg, size_t len)
+        const std::string &file() { return _filename; }
+        void log(const char *msg, size_t len)
         {
             _ofs.write(msg, len);
-            if(_ofs.good() == false)
+            if (_ofs.good() == false)
             {
-                std::cout<<"日志输出文件失败! \n";
+                std::cout << "日志输出文件失败! \n";
             }
         }
-     private:
+
+    private:
         std::string _filename;
         std::ofstream _ofs;
     };
 
     class RollSink : public LogSink
     {
-     public:
+    public:
         using ptr = std::shared_ptr<RollSink>;
-        RollSink(const std::string& basename,size_t max_size)
-        :_basename(basename),
-        _max_fsize(max_size)
+        RollSink(const std::string &basename, size_t max_size)
+            : _basename(basename),
+              _max_fsize(max_size)
         {
             util::file::create_directory(util::file::path(basename));
         }
 
-        void log(const char *data, size_t len) 
+        void log(const char *data, size_t len)
         {
             initLogFile();
             _ofs.write(data, len);
-            if (_ofs.good() == false) 
+            if (_ofs.good() == false)
             {
-            std::cout << "⽇志输出⽂件失败！\n";
+                std::cout << "⽇志输出⽂件失败！\n";
             }
             _cur_fsize += len;
         }
 
-
-     private:
-
+    private:
         void initLogFile()
         {
-            if(_ofs.is_open() == false || _cur_fsize >= _max_fsize)
+            if (_ofs.is_open() == false || _cur_fsize >= _max_fsize)
             {
                 _ofs.close();
                 std::string name = createFilename();
@@ -113,11 +112,11 @@ namespace yhlog
         size_t _cur_fsize;
     };
 
-    class SinkFactory 
+    class SinkFactory
     {
-     public:
-        template<typename SinkType, typename ...Args>
-        static LogSink::ptr create(Args &&...args) 
+    public:
+        template <typename SinkType, typename... Args>
+        static LogSink::ptr create(Args &&...args)
         {
             return std::make_shared<SinkType>(std::forward<Args>(args)...);
         }
