@@ -99,7 +99,7 @@ To run the test suite:
 
 ```bash
 cd logs
-test/test_logger
+./test_logger
 ```
 
 ## Performance
