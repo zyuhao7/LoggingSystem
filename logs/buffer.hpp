@@ -16,6 +16,7 @@ namespace yhlog
 #define BUFFER_THRESHOLD_SIZE (10 * 1024 * 1024)
     class Buffer
     {
+    public:
         Buffer()
             : _buffer(BUFFER_DEFAULT_SIZE),
               _read_idx(0),
