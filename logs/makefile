@@ -1,6 +1,6 @@
-.PHONY:test
-test:test.cc
+.PHONY:test_logger
+test_logger:test.cc
 	g++ -o test test.cc -lpthread
 	
 clean:
-	rm -fr test
+	rm -fr test_logger
