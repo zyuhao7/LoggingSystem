@@ -25,12 +25,11 @@ namespace yhlog
 #define LOG_ERROR(logger, fmt, ...) (logger)->error(fmt, ##__VA_ARGS__)
 #define LOG_FATAL(logger, fmt, ...) (logger)->fatal(fmt, ##__VA_ARGS__)
 
-#define LOGD(fmt, ...) LOG_DEBUG(bitlog::rootLogger(), fmt, ##__VA_ARGS__)
-#define LOGI(fmt, ...) LOG_INFO(bitlog::rootLogger(), fmt, ##__VA_ARGS__)
-#define LOGW(fmt, ...) LOG_WARN(bitlog::rootLogger(), fmt, ##__VA_ARGS__)
-#define LOGE(fmt, ...) LOG_ERROR(bitlog::rootLogger(), fmt, ##__VA_ARGS__)
-#define LOGF(fmt, ...) LOG_FATAL(bitlog::rootLogger(), fmt, ##__VA_ARGS__)
-
+#define LOGD(fmt, ...) LOG_DEBUG(yhlog::rootLogger(), fmt, ##__VA_ARGS__)
+#define LOGI(fmt, ...) LOG_INFO(yhlog::rootLogger(), fmt, ##__VA_ARGS__)
+#define LOGW(fmt, ...) LOG_WARN(yhlog::rootLogger(), fmt, ##__VA_ARGS__)
+#define LOGE(fmt, ...) LOG_ERROR(yhlog::rootLogger(), fmt, ##__VA_ARGS__)
+#define LOGF(fmt, ...) LOG_FATAL(yhlog::rootLogger(), fmt, ##__VA_ARGS__)
 }
 
 #endif
