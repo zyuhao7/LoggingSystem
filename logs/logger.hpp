@@ -4,7 +4,6 @@
 #include "level.hpp"
 #include "message.hpp"
 #include "formatter.hpp"
-#include "loggermanager.h"
 #include "looper.hpp"
 #include "sink.hpp"
 #include <vector>
@@ -163,6 +162,7 @@ namespace yhlog
 
         virtual void LogIt(const std::string &msg) = 0;
 
+    protected:
         std::mutex _mutex;
         std::string _name;
         Formatter::ptr _formatter;
@@ -184,7 +184,7 @@ namespace yhlog
         }
 
     private:
-        virtual void logIt(const std::string &msg)
+        virtual void LogIt(const std::string &msg)
         {
             std::unique_lock<std::mutex> lock(_mutex);
             if (_sinks.empty())
@@ -214,7 +214,7 @@ namespace yhlog
         }
 
     protected:
-        virtual void log(const std::string &msg)
+        virtual void LogIt(const std::string &msg)
         {
             _looper->push(msg);
         }
@@ -266,44 +266,6 @@ namespace yhlog
             {
                 lp = std::make_shared<SyncLogger>(_logger_name, _formatter, _sinks, _level);
             }
-            return lp;
-        }
-    };
-
-    class GlobalLoggerBuilder : public Logger::Builder
-    {
-    public:
-        virtual Logger::ptr build()
-        {
-            if (_logger_name.empty())
-            {
-                std::cout << "⽇志器名称不能为空！！";
-                abort();
-            }
-            assert(LoggerManager::getInstance().hasLogger(_logger_name) == false);
-            if (_formatter.get() == nullptr)
-            {
-                std::cout << "当前⽇志器：" << _logger_name;
-                std::cout << " 未检测到⽇志格式，默认设置为";
-                std::cout << "[ %d{%H:%M:%S}%T%t%T[%p]%T[%c]%T%f:%l%T%m%n ]!\n";
-                _formatter = std::make_shared<Formatter>();
-            }
-            if (_sinks.empty())
-            {
-                std::cout << "当前⽇志器：" << _logger_name;
-                std::cout << " 未检测到落地⽅向，默认设置为标准输出!\n";
-                _sinks.push_back(std::make_shared<StdoutSink>());
-            }
-            Logger::ptr lp;
-            if (_logger_type == Logger::Type::LOGGER_ASYNC)
-            {
-                lp = std::make_shared<AsyncLogger>(_logger_name, _formatter, _sinks, _level);
-            }
-            else
-            {
-                lp = std::make_shared<SyncLogger>(_logger_name, _formatter, _sinks, _level);
-            }
-            LoggerManager::getInstance().addLogger(_logger_name, lp);
             return lp;
         }
     };
