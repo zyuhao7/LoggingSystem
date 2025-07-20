@@ -27,11 +27,9 @@ namespace yhlog
               _ctime(util::data::now()),
               _tid(std::this_thread::get_id())
         {
-            std::cout << "LogMsg construct success " << std::endl;
         }
         ~LogMsg()
         {
-            std::cout << "LogMsg destruct success " << std::endl;
         }
     };
 }
